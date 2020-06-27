@@ -13,7 +13,6 @@ def buildplot(ticker,h=0,l=0,o=0,c=1):
     url = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol='
     url += ticker+'&apikey='+api+"&datatype=csv"
     a=pd.read_csv(url)
-    print(a)
     a.timestamp=pd.to_datetime(a.timestamp)
     
     x=a.timestamp[30:0:-1]
