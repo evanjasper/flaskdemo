@@ -7,19 +7,20 @@ from bokeh.embed import components
 
 app = Flask(__name__)
 
-def buildplot(ticker,h=0,l=0,o=0,c=1):
+def buildplot(ticker,bdays,h=0,l=0,o=0,c=1):
     api="E63Q4X6XMEZL2UVL"
     ticker = ticker.upper()
     url = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol='
     url += ticker+'&apikey='+api+"&datatype=csv"
     a=pd.read_csv(url)
     a.timestamp=pd.to_datetime(a.timestamp)
-    
-    x=a.timestamp[30:0:-1]
-    yhigh=a.high[30:0:-1]
-    ylow=a.low[30:0:-1]
-    yopen=a.open[30:0:-1]
-    yclose=a.close[30:0:-1]
+    if bdays>99:
+        bdays=99
+    x=a.timestamp[bdays:0:-1]
+    yhigh=a.high[bdays:0:-1]
+    ylow=a.low[bdays:0:-1]
+    yopen=a.open[bdays:0:-1]
+    yclose=a.close[bdays:0:-1]
     
     output_file("./templates/stockreport.html")
     p1 = figure(title=ticker+" Stock Price",x_axis_label="date",x_axis_type='datetime',y_axis_label="price")
@@ -79,6 +80,12 @@ def index():
     if request.args.get("ticker") == None:
         ticker = "KO"
     
+    bdays = request.args.get("bdays")
+    if request.args.get("bdays") == None:
+        bdays = 30
+    else:
+        bdays = int(bdays)
+    
     h = request.args.get("High")
     if request.args.get("High") == None:
         h = 0
@@ -93,11 +100,11 @@ def index():
         c = 1
 #     print(ticker,h,l,o,c)
     
-    plot = buildplot(ticker,h,l,o,c)
+    plot = buildplot(ticker,bdays,h,l,o,c)
     
     script,div=components(plot)
 
-    return render_template('index.html',script=script,div=div,ticker=ticker,h=h,l=l,o=o,c=c)   
+    return render_template('index.html',script=script,div=div,ticker=ticker,bdays=bdays,h=h,l=l,o=o,c=c)   
 
 if __name__ == '__main__':
     app.run(port=33507)
